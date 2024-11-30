@@ -1,6 +1,6 @@
 import { Features } from "./components/Feature";
 import { LandingPage } from "./components/landingPage";
-import ChatBot from "./components/OpenAI";
+// import ChatBot from "./components/OpenAI";
 import VoiceRecognition from "./components/VoiceCommand";
 
 const App = () => {
@@ -10,7 +10,7 @@ const App = () => {
       <Features />
       <div id="app" className="main">
       <VoiceRecognition />
-      <ChatBot />
+      {/* <ChatBot /> */}
       </div>
       
     </div>

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Mic, MicOff } from "lucide-react";
+import Chatbot from './OpenAI'
 
 // Mock function to simulate backend communication
 const mockBackendResponse = () => {
@@ -11,7 +12,8 @@ const VoiceRecognition = () => {
   const [transcript, setTranscript] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [direction, setDirection] = useState("");
-  const [result, setResult] = useState("");  // State to store either exact word or whole sentence
+  const [MLResult, setMLResult] = useState(""); // State for ML keywords
+  const [GeneralResult, setGeneralResult] = useState(""); // State for general sentences
 
   const startVoiceRecognition = () => {
     if (
@@ -49,13 +51,16 @@ const VoiceRecognition = () => {
       // Check for keywords in the result
       keywords.forEach((keyword) => {
         if (result.toLowerCase().includes(keyword)) {
-          detectedKeyword = keyword;  // Store detected keyword
+          detectedKeyword = keyword; // Store detected keyword
         }
       });
 
-      // Set result: if keyword detected, store the keyword, else store the whole sentence
+      // Separate results based on keyword detection
       if (detectedKeyword) {
-        setResult(detectedKeyword);
+        // If keyword is detected, store in MLResult
+        setMLResult(detectedKeyword);
+        setGeneralResult(""); // Clear GeneralResult
+
         // Simulate sending object name to the backend
         console.log(`Object detected: ${detectedKeyword}`);
 
@@ -66,7 +71,9 @@ const VoiceRecognition = () => {
         // Use Azure Cognitive Services to speak the direction
         speakDirection(response);
       } else {
-        setResult(result);  // Store the whole sentence if no keyword detected
+        // If no keyword, store the whole sentence in GeneralResult
+        setGeneralResult(result);
+        setMLResult(""); // Clear MLResult
       }
     };
 
@@ -131,19 +138,28 @@ const VoiceRecognition = () => {
                   "Your speech will appear here..."
                 )}
               </p>
-              <p className="text-gray-300 mt-4">
-                {result && (
-                  <>
-                    Result: <strong className="text-white">{result}</strong>
-                  </>
-                )}
-              </p>
+
+              {MLResult && (
+                <p className="text-gray-300 mt-4">
+                  ML Result: <strong className="text-white">{MLResult}</strong>
+                </p>
+              )}
+
+              {GeneralResult && (
+                <p className="text-gray-300 mt-4">
+                  General Result:{" "}
+                  <strong className="text-white">{GeneralResult}</strong>
+                </p>
+              )}
+
               {direction && (
                 <p className="text-gray-300 mt-4">
                   Direction: <strong className="text-white">{direction}</strong>
                 </p>
               )}
             </div>
+            {/* Pass GeneralResult as a prop to Chatbot component */}
+            {GeneralResult && <Chatbot message={GeneralResult} />}
           </div>
         </div>
       </div>
