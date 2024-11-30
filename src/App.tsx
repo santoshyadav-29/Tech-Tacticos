@@ -4,6 +4,7 @@ import { CommandPanel } from './components/CommandPanel.tsx';
 import SpeechRecognitionComponent from './components/SpeechRecognition.tsx';
 // import TextToSpeech from './components/SpeechTranslation.tsx';
 import AzureTextToSpeech from './components/AzureTextToSpeech.tsx';
+import CameraView from './components/Camera.tsx';
 
 
 // API Key for Azure Speech Services = BzVaXKlN3nT1g8ncbHNr4yYJlRHdyEce8ndqt2ZGXYrWDGY6dpmAJQQJ99AKACYeBjFXJ3w3AAAYACOG3tTS
@@ -31,7 +32,7 @@ function App() {
           <SpeechRecognitionComponent />
           
           <div className="mt-8">
-            <CommandPanel isActive={isActive} />
+            <CameraView />
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm">
