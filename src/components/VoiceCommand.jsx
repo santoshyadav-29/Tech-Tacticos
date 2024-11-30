@@ -11,6 +11,7 @@ const VoiceRecognition = () => {
   const [transcript, setTranscript] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [direction, setDirection] = useState("");
+  const [result, setResult] = useState("");  // State to store either exact word or whole sentence
 
   const startVoiceRecognition = () => {
     if (
@@ -41,21 +42,32 @@ const VoiceRecognition = () => {
       console.log("Recognized text:", result);
       setTranscript(result);
 
-      // Check for specific words and trigger backend call
+      // List of keywords to detect specific objects
       const keywords = ["mouse", "phone", "laptop", "bottle"];
+      let detectedKeyword = null;
+
+      // Check for keywords in the result
       keywords.forEach((keyword) => {
         if (result.toLowerCase().includes(keyword)) {
-          // Simulate sending object name to the backend
-          console.log(`Object detected: ${keyword}`);
-          
-          // Mock backend response (go left or go right)
-          const response = mockBackendResponse();
-          setDirection(response);
-
-          // Use Azure Cognitive Services to speak the direction
-          speakDirection(response);
+          detectedKeyword = keyword;  // Store detected keyword
         }
       });
+
+      // Set result: if keyword detected, store the keyword, else store the whole sentence
+      if (detectedKeyword) {
+        setResult(detectedKeyword);
+        // Simulate sending object name to the backend
+        console.log(`Object detected: ${detectedKeyword}`);
+
+        // Mock backend response (go left or go right)
+        const response = mockBackendResponse();
+        setDirection(response);
+
+        // Use Azure Cognitive Services to speak the direction
+        speakDirection(response);
+      } else {
+        setResult(result);  // Store the whole sentence if no keyword detected
+      }
     };
 
     recognition.onerror = (event) => {
@@ -117,6 +129,13 @@ const VoiceRecognition = () => {
                   </>
                 ) : (
                   "Your speech will appear here..."
+                )}
+              </p>
+              <p className="text-gray-300 mt-4">
+                {result && (
+                  <>
+                    Result: <strong className="text-white">{result}</strong>
+                  </>
                 )}
               </p>
               {direction && (

@@ -36,7 +36,7 @@ export const Features = () => {
 
   return (
     <section className="py-20 px-4">
-      <div className="container mx-auto">
+      <div className="md:w-[90%] mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-white mb-6">
             Find Your World, One Word at a Time
