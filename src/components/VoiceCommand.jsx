@@ -29,6 +29,24 @@ const VoiceRecognition = () => {
     }
   };
 
+  // Function to fetch the latest direction
+  const fetchDirection = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/direction`, { method: "GET" });
+      const data = await response.json();
+
+      if (data.message) {
+        setDirection(data.message);
+        speakDirection(data.message); // Speak the direction
+      } else {
+        setDirection("No direction provided.");
+      }
+    } catch (err) {
+      setError("Failed to fetch direction: " + err.message);
+      console.error(err);
+    }
+  };
+
   // Start voice recognition and process the results
   const startVoiceRecognition = () => {
     if (
@@ -81,23 +99,16 @@ const VoiceRecognition = () => {
 
         // Simulate sending object name to the backend
         console.log(`Object detected: ${detectedKeyword}`);
-
-        // Fetch direction from the backend
-        try {
-          const response = await fetch(`${BASE_URL}/direction`, { method: "GET" });
-          const data = await response.json();
-
-          // Assuming the direction is returned in the response
-          setDirection(data.message || "No direction provided.");
-        } catch (err) {
-          setError("Failed to fetch direction: " + err.message);
-          console.error(err);
-        }
       } else {
         // If no keyword, store the whole sentence in GeneralResult
         setGeneralResult(result);
         setMLResult(""); // Clear MLResult
       }
+
+      // Fetch direction after a 2-second gap
+      setTimeout(() => {
+        fetchDirection();
+      }, 2000); // 2 seconds delay
     };
 
     recognition.onerror = (event) => {
@@ -113,6 +124,7 @@ const VoiceRecognition = () => {
     recognition.start();
   };
 
+  // Speak the direction using voice command
   const speakDirection = (direction) => {
     const speech = new SpeechSynthesisUtterance(direction);
     speech.lang = "en-US";
