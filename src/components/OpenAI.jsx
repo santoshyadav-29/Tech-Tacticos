@@ -19,19 +19,34 @@ const Chatbot = (props) => {
         prompt: message,
       });
 
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { role: "assistant", content: response.data.response },
-      ]);
+      const assistantMessage = response.data.response;
+
+      // Clear previous messages and add the assistant's message
+      setMessages([{ role: "assistant", content: assistantMessage }]);
+
+      // Play the audio feedback
+      playAudioFeedback(assistantMessage);
     } catch (error) {
       console.error("Error fetching response from the API", error);
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { role: "assistant", content: "Sorry, something went wrong." },
-      ]);
+
+      // Clear previous messages and show the error message
+      setMessages([{ role: "assistant", content: "Sorry, something went wrong." }]);
+
+      // Play the audio feedback for error
+      playAudioFeedback("Sorry, something went wrong.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const playAudioFeedback = (text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US"; // Set the language of the speech
+    utterance.onend = () => {
+      // Clear the messages after the speech finishes
+      setMessages([]);
+    };
+    window.speechSynthesis.speak(utterance);
   };
 
   return (
