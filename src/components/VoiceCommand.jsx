@@ -1,20 +1,35 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mic, MicOff } from "lucide-react";
-import Chatbot from './OpenAI'
-
-// Mock function to simulate backend communication
-const mockBackendResponse = () => {
-  const directions = ["go left", "go right"];
-  return directions[Math.floor(Math.random() * directions.length)];
-};
+import Chatbot from "./OpenAI";
 
 const VoiceRecognition = () => {
   const [transcript, setTranscript] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [direction, setDirection] = useState("");
-  const [MLResult, setMLResult] = useState(""); // State for ML keywords
-  const [GeneralResult, setGeneralResult] = useState(""); // State for general sentences
+  const [MLResult, setMLResult] = useState("");
+  const [GeneralResult, setGeneralResult] = useState("");
+  const [error, setError] = useState("");
 
+  // API base URL
+  const BASE_URL = "http://172.17.16.218:8000";
+
+  // Start the project before voice recognition
+  const startProject = async () => {
+    try {
+      const response = await fetch(`${BASE_URL}/start`, { method: "GET" });
+      const data = await response.json(); // Parse the response first
+
+      if (data.message !== "started") {
+        throw new Error("Failed to start project");
+      }
+      console.log("Project started successfully");
+    } catch (err) {
+      setError("Could not start project: " + err.message);
+      console.error(err);
+    }
+  };
+
+  // Start voice recognition and process the results
   const startVoiceRecognition = () => {
     if (
       !("webkitSpeechRecognition" in window) &&
@@ -25,6 +40,9 @@ const VoiceRecognition = () => {
       );
       return;
     }
+
+    // Start the project before starting voice recognition
+    startProject();
 
     const SpeechRecognition =
       window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -39,7 +57,7 @@ const VoiceRecognition = () => {
       console.log("Voice recognition started...");
     };
 
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
       const result = event.results[0][0].transcript;
       console.log("Recognized text:", result);
       setTranscript(result);
@@ -64,12 +82,17 @@ const VoiceRecognition = () => {
         // Simulate sending object name to the backend
         console.log(`Object detected: ${detectedKeyword}`);
 
-        // Mock backend response (go left or go right)
-        const response = mockBackendResponse();
-        setDirection(response);
+        // Fetch direction from the backend
+        try {
+          const response = await fetch(`${BASE_URL}/direction`, { method: "GET" });
+          const data = await response.json();
 
-        // Use Azure Cognitive Services to speak the direction
-        speakDirection(response);
+          // Assuming the direction is returned in the response
+          setDirection(data.message || "No direction provided.");
+        } catch (err) {
+          setError("Failed to fetch direction: " + err.message);
+          console.error(err);
+        }
       } else {
         // If no keyword, store the whole sentence in GeneralResult
         setGeneralResult(result);
@@ -91,7 +114,6 @@ const VoiceRecognition = () => {
   };
 
   const speakDirection = (direction) => {
-    // This function will use Azure Cognitive Services for text-to-speech (simulated here)
     const speech = new SpeechSynthesisUtterance(direction);
     speech.lang = "en-US";
     window.speechSynthesis.speak(speech);
@@ -128,6 +150,8 @@ const VoiceRecognition = () => {
             </button>
 
             <div className="w-full bg-navy-900/50 rounded-xl p-6 min-h-[100px] text-center">
+              {error && <p className="text-red-500 mb-4">{error}</p>}
+
               <p className="text-gray-300 text-lg">
                 {transcript ? (
                   <>
@@ -159,7 +183,7 @@ const VoiceRecognition = () => {
               )}
             </div>
             {/* Pass GeneralResult as a prop to Chatbot component */}
-            {GeneralResult && <Chatbot message={GeneralResult} />}
+            {/* {GeneralResult && <Chatbot message={GeneralResult} />} */}
           </div>
         </div>
       </div>
