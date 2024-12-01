@@ -17,11 +17,11 @@ export const LandingPage = () => {
             Never loose your items again with VisionGuide.{" "}
           </p>
           <div className="flex gap-4 flex-wrap">
-            <button className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors mb-4 sm:mb-0">
+            <button className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 mb-4 sm:mb-0">
               Learn More
             </button>
-            <button className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 transition-colors">
-              <a href="#app">Try it out!</a>
+            <button className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-lg hover:bg-white/10 ">
+              Try it out!
             </button>
           </div>
         </div>
