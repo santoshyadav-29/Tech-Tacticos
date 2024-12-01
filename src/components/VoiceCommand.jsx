@@ -1,23 +1,27 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Mic, MicOff } from "lucide-react";
-import Chatbot from "./OpenAI";
+import * as sdk from "microsoft-cognitiveservices-speech-sdk";
 
 const VoiceRecognition = () => {
   const [transcript, setTranscript] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [direction, setDirection] = useState("");
   const [MLResult, setMLResult] = useState("");
-  const [GeneralResult, setGeneralResult] = useState("");
   const [error, setError] = useState("");
 
   // API base URL
-  const BASE_URL = "http://172.17.16.218:8000";
+  const BASE_URL = "http://192.168.84.13:8000";
+
+  // Azure Speech SDK credentials
+  const AZURE_SPEECH_KEY =
+    "BzVaXKlN3nT1g8ncbHNr4yYJlRHdyEce8ndqt2ZGXYrWDGY6dpmAJQQJ99AKACYeBjFXJ3w3AAAYACOG3tTS";
+  const AZURE_REGION = "eastus";
 
   // Start the project before voice recognition
   const startProject = async () => {
     try {
       const response = await fetch(`${BASE_URL}/start`, { method: "GET" });
-      const data = await response.json(); // Parse the response first
+      const data = await response.json();
 
       if (data.message !== "started") {
         throw new Error("Failed to start project");
@@ -81,7 +85,7 @@ const VoiceRecognition = () => {
       setTranscript(result);
 
       // List of keywords to detect specific objects
-      const keywords = ["mouse", "phone", "laptop", "bottle"];
+      const keywords = ["mouse", "phone", "laptop", "bottle","scissor"];
       let detectedKeyword = null;
 
       // Check for keywords in the result
@@ -91,24 +95,20 @@ const VoiceRecognition = () => {
         }
       });
 
-      // Separate results based on keyword detection
+      // If a keyword is detected, fetch the direction
       if (detectedKeyword) {
-        // If keyword is detected, store in MLResult
         setMLResult(detectedKeyword);
-        setGeneralResult(""); // Clear GeneralResult
-
-        // Simulate sending object name to the backend
         console.log(`Object detected: ${detectedKeyword}`);
+        fetchDirection(); // Fetch direction only for detected keywords
       } else {
-        // If no keyword, store the whole sentence in GeneralResult
-        setGeneralResult(result);
-        setMLResult(""); // Clear MLResult
+        setMLResult("");
+        setDirection("No valid keyword detected.");
       }
 
       // Fetch direction after a 2-second gap
       setInterval(() => {
         fetchDirection();
-      }, 4000); // 2 seconds delay
+      }, 2000); // 2 seconds delay
     };
 
     recognition.onerror = (event) => {
@@ -124,12 +124,34 @@ const VoiceRecognition = () => {
     recognition.start();
   };
 
-  // Speak the direction using voice command
-  const speakDirection = (direction) => {
-    const speech = new SpeechSynthesisUtterance(direction);
-    speech.lang = "en-US";
-    window.speechSynthesis.speak(speech);
-    console.log(`Speaking: ${direction}`);
+  // Speak the direction using Azure Cognitive Services
+  const speakDirection = async (text) => {
+    const speechConfig = sdk.SpeechConfig.fromSubscription(
+      AZURE_SPEECH_KEY,
+      AZURE_REGION
+    );
+    const audioConfig = sdk.AudioConfig.fromDefaultSpeakerOutput();
+    const synthesizer = new sdk.SpeechSynthesizer(speechConfig, audioConfig);
+
+    synthesizer.speakTextAsync(
+      text,
+      (result) => {
+        if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
+          console.log(`Spoken successfully: ${text}`);
+        } else {
+          console.error(
+            "Speech synthesis canceled, " +
+              result.errorDetails +
+              "\nDid you set the key and region values?"
+          );
+        }
+        synthesizer.close();
+      },
+      (err) => {
+        console.error(err);
+        synthesizer.close();
+      }
+    );
   };
 
   return (
@@ -177,14 +199,8 @@ const VoiceRecognition = () => {
 
               {MLResult && (
                 <p className="text-gray-300 mt-4">
-                  ML Result: <strong className="text-white">{MLResult}</strong>
-                </p>
-              )}
-
-              {GeneralResult && (
-                <p className="text-gray-300 mt-4">
-                  General Result:{" "}
-                  <strong className="text-white">{GeneralResult}</strong>
+                  Detected Object:{" "}
+                  <strong className="text-white">{MLResult}</strong>
                 </p>
               )}
 
@@ -194,8 +210,6 @@ const VoiceRecognition = () => {
                 </p>
               )}
             </div>
-            {/* Pass GeneralResult as a prop to Chatbot component */}
-            {GeneralResult && <Chatbot message={GeneralResult} />}
           </div>
         </div>
       </div>

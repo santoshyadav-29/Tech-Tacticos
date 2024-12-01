@@ -14,7 +14,7 @@ export const LandingPage = () => {
             One Word at a Time
           </h1>
           <p className="text-gray-300 text-base sm:text-lg mb-8">
-            Finding is hard to
+            Never loose your items again with VisionGuide.{" "}
           </p>
           <div className="flex gap-4 flex-wrap">
             <button className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors mb-4 sm:mb-0">
@@ -27,7 +27,7 @@ export const LandingPage = () => {
         </div>
 
         {/* Right side planet image */}
-        <div className="relative w-full sm:w-[400px] md:w-[500px] lg:w-[600px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] animate-float">
+        <div className="w-[50%]">
           <img
             src={planet}
             alt="Earth Globe"
