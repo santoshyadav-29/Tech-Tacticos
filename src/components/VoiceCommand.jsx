@@ -106,9 +106,9 @@ const VoiceRecognition = () => {
       }
 
       // Fetch direction after a 2-second gap
-      setTimeout(() => {
+      setInterval(() => {
         fetchDirection();
-      }, 2000); // 2 seconds delay
+      }, 4000); // 2 seconds delay
     };
 
     recognition.onerror = (event) => {
@@ -195,7 +195,7 @@ const VoiceRecognition = () => {
               )}
             </div>
             {/* Pass GeneralResult as a prop to Chatbot component */}
-            {/* {GeneralResult && <Chatbot message={GeneralResult} />} */}
+            {GeneralResult && <Chatbot message={GeneralResult} />}
           </div>
         </div>
       </div>
